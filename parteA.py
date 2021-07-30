@@ -1,10 +1,5 @@
 import re
 
-# Donde la llave es el valor retornado y el 
-# valor son los valores evaluados para obtener la llave
-andOperator = {'0': [[0, 0], [0, 1], [1, 0]], '1': [[1,1]]}
-orOperator = {'0': [[0, 0]], '1': [[0, 1], [1, 0], [1,1]]}
-notOperator = {'0': [[1]], '1': [[0]]}
 
 # Recibo {{p},{~p}} -> retorno p∧~p
 def obtenerFormulaBooleana(clausula):
@@ -32,12 +27,14 @@ def calcularAsignacion(operacionBooleana):
     # Por parentesis en la expresion booleana
     expresiones = re.findall('\((.*?)\)', operacionBooleana)
 
+    orExpresions = []
+
     for expresion in expresiones:
         # Reemplazo el abecedario por un valor 0 o 1
-        expresion = expresion.replace('p', '0')
-        expresion = expresion.replace('q', '0')
-        expresion = expresion.replace('r', '0')
-        expresion = expresion.replace('s', '0')
+        expresion = expresion.replace('p', '1')
+        expresion = expresion.replace('q', '1')
+        expresion = expresion.replace('r', '1')
+        expresion = expresion.replace('s', '1')
 
         # Verifico si hay un negativo
         if ("~" in expresion):
@@ -50,8 +47,48 @@ def calcularAsignacion(operacionBooleana):
             # Se remueve el negativo
             expresion = expresion.replace('~', '')
 
-        print(expresion)
+        
+        # Evaluo los and
+        valores = expresion.split('∨')
+        resultadoAnd = recEvaluarAnd(valores)
+        # Agrego aL resultado del or
+        orExpresions.append(resultadoAnd)
 
+    # Evaluo los or
+    resultadoFinal = recEvaluarOr(orExpresions)
+    print("Resultado de la expresion", operacionBooleana, "evaluada todo en 1 es", resultadoFinal)
+    return resultadoFinal
+
+
+def recEvaluarAnd(valores):
+    andOperator = {('0', '0'): '0', ('0', '1'): '0', ('1', '0'): '0', ('1','1'): '1'}
+
+    [a, b] = valores[0], valores[1]
+    # Obtengo la salida de evaular a, b en un and
+    salida = andOperator[tuple([a, b])]
+
+    # Reemplazo valores
+    valoresActuales = valores[1:]
+    if (len(valoresActuales) > 1):
+        valoresActuales[0] = salida
+        recEvaluarAnd(valoresActuales)
+    
+    return salida
+
+def recEvaluarOr(valores):
+    orOperator = {('0', '0'): '0', ('0', '1'): '1', ('1', '0'): '1', ('1','1'): '1'}
+
+    [a, b] = valores[0], valores[1]
+    # Obtengo la salida de evaular a, b en un or
+    salida = orOperator[tuple([a, b])]
+
+    # Reemplazo valores
+    valoresActuales = valores[1:]
+    if (len(valoresActuales) > 1):
+        valoresActuales[0] = salida
+        recEvaluarOr(valoresActuales)
+    
+    return salida
 
 operacionBooleana = obtenerFormulaBooleana('{{p,r,~s},{q,p,s}}')
 calcularAsignacion(operacionBooleana)
