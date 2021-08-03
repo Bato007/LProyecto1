@@ -8,8 +8,13 @@ def getVariables(expressions):
                     literals.append(literal)
 
 
-def selectLiteral(I):
-    return literals.pop(0)
+def selectLiteral(I):   # Se encarga de obtener las lilterales
+    keys = list(I.keys())
+
+    # Ahora devolvemos otra literal
+    for literal in literals:
+        if literal not in keys:
+            return literal
 
 
 def DPLL(B, I):
@@ -19,22 +24,25 @@ def DPLL(B, I):
     for element in B:
         if len(element) == 0:
             return False, {}
-    literal = selectLiteral(I)  # 1
+    literal = selectLiteral(I)
+
     B1 = cleanLiteral(B, literal)  # 2
     I[literal] = 1                # Hacer true L
-
     result, I1 = DPLL(B1, I)
     if result:
-      return True, I1
+        return True, I1
 
     B2 = cleanLiteral(B, '~' + literal)
     I[literal] = 0
     result, I2 = DPLL(B2, I)
     if result:
-      return True, I2
+        return True, I2
 
     return False, {}
 
 
-temp = [['q', 'p', '~p']]
+temp = [['q', 'p', '~p'], ['q']]
 getVariables(temp)
+print(literals)
+print(selectLiteral({}))
+print(selectLiteral({'q': 0}))
