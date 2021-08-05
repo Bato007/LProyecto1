@@ -1,8 +1,21 @@
 import re
+import itertools
+
+# Extrae los valores individuales de la clausula
+def getVariables(expressions):
+    global literals
+    literals = []
+    for expression in expressions:
+        for element in expression:
+            for literal in element:
+                if (literal != '~') and (literal not in literals) and (literal != '{') and (literal != '}') and (literal != ','):
+                    literals.append(literal)
 
 
 # Recibo {{p},{~p}} -> retorno p∧~p
 def obtenerFormulaBooleana(clausula):
+    
+    getVariables(clausula)
     # Remuevo el primer y ultimo string -> {p},{~p}
     clausula = clausula[1:-1]
     subconjuntos = re.findall('\{(.*?)\}', clausula)
@@ -21,6 +34,8 @@ def obtenerFormulaBooleana(clausula):
     return res
 
 
+
+    
 # Recibo operacion booleana y retorno el resultado correspondiente
 # ej p∧~p -> 1 ∧ ~0 = 1
 def calcularAsignacion(operacionBooleana):
@@ -28,36 +43,43 @@ def calcularAsignacion(operacionBooleana):
     expresiones = re.findall('\((.*?)\)', operacionBooleana)
 
     orExpresions = []
-
-    for expresion in expresiones:
-        # Reemplazo el abecedario por un valor 0 o 1
-        expresion = expresion.replace('p', '1')
-        expresion = expresion.replace('q', '1')
-        expresion = expresion.replace('r', '1')
-        expresion = expresion.replace('s', '1')
-
-        # Verifico si hay un negativo
-        if ("~" in expresion):
-            i = expresion.index('~')
-            # Se reemplaza por el valor contrario
-            if (expresion[i+1] == '0'):
-                expresion = expresion[0:i+1] + "1" + expresion[i+2:]
-            else:
-                expresion = expresion[0:i+1] + "0" + expresion[i+2:]
-            # Se remueve el negativo
-            expresion = expresion.replace('~', '')
-
+    
+    for i in range(2**len(literals)): # Genera las combinaciones de literales
         
-        # Evaluo los and
-        valores = expresion.split('∨')
-        resultadoAnd = recEvaluarAnd(valores)
-        # Agrego aL resultado del or
-        orExpresions.append(resultadoAnd)
-
-    # Evaluo los or
-    resultadoFinal = recEvaluarOr(orExpresions)
-    print("Resultado de la expresion", operacionBooleana, "evaluada todo en 1 es", resultadoFinal)
-    return resultadoFinal
+        litVars = {}
+        orExpresions = []
+        binary = bin(i)
+        binary = binary.replace('b','')
+        binary = binary.zfill(len(literals))
+        binary = str(binary[len(binary)-len(literals):len(binary)]) # Combinacion concurrente
+        
+        for expresion in expresiones:
+            # Reemplazo el abecedario por un valor 0 o 1
+            for literal in literals:
+                # Intercambia los valores de la expresion por los generados en binario
+                expresion = expresion.replace(literal, binary[literals.index(literal)])
+                litVars[literal] = binary[literals.index(literal)]
+                
+            # Verifico si hay un negativo
+            if ("~" in expresion):
+                i = expresion.index('~')
+                # Se reemplaza por el valor contrario
+                if (expresion[i+1] == '0'):
+                    expresion = expresion[0:i+1] + "1" + expresion[i+2:]
+                else:
+                    expresion = expresion[0:i+1] + "0" + expresion[i+2:]
+                # Se remueve el negativo
+                expresion = expresion.replace('~', '')
+            
+            # Evaluo los and
+            valores = expresion.split('∨')
+            resultadoAnd = recEvaluarAnd(valores)
+            # Agrego aL resultado del or
+            orExpresions.append(resultadoAnd)
+        # Evaluo los or
+        resultadoFinal = recEvaluarOr(orExpresions)
+        print("Resultado de la expresion", operacionBooleana, "evaluada en ",litVars, "es ", resultadoFinal)
+        
 
 
 def recEvaluarAnd(valores):
@@ -91,4 +113,19 @@ def recEvaluarOr(valores):
     return salida
 
 operacionBooleana = obtenerFormulaBooleana('{{p,r,~s},{q,p,s}}')
+examples = [
+    [['p'], ['~p']],
+    [['q', 'p', '~p']],
+    [['~p', '~r', '~s'], ['~q', '~p', '~s']],
+    [['~p', '~q'], ['q', '~s'], ['~p', 's'], ['~q', 's']],
+    [['~p', '~q', '~r'], ['q', '~r', 'p'], ['~p', 'q', '~r']],
+    [['r'], ['~q', '~r'], ['~p', 'q', '~r'], ['q']]
+]
+operacionBooleana = obtenerFormulaBooleana('{{p},{~p}}')
+print(operacionBooleana)
+        
+        
 calcularAsignacion(operacionBooleana)
+
+
+
