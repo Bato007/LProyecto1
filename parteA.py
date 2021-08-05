@@ -73,12 +73,20 @@ def calcularAsignacion(operacionBooleana):
             
             # Evaluo los and
             valores = expresion.split('∨')
-            resultadoAnd = recEvaluarAnd(valores)
-            # Agrego aL resultado del or
-            orExpresions.append(resultadoAnd)
+            if (len(valores) > 1):
+                resultadoAnd = recEvaluarAnd(valores)  
+                # Agrego aL resultado del or
+                orExpresions.append(resultadoAnd)
+            else:
+                # Agrego aL resultado del or
+                orExpresions.append(expresion)
+        
         # Evaluo los or
-        resultadoFinal = recEvaluarOr(orExpresions)
-        print("Resultado de la expresion", operacionBooleana, "evaluada en ",litVars, "es ", resultadoFinal)
+        if (len(orExpresions) > 1):
+            resultadoFinal = recEvaluarOr(orExpresions)
+            print("Resultado de la expresion", operacionBooleana, "evaluada en ",litVars, "es ", resultadoFinal)
+        else:
+            print("Resultado de la expresion", operacionBooleana, "evaluada en ",litVars, "es ", orExpresions[0])
         
 
 
@@ -94,7 +102,7 @@ def recEvaluarAnd(valores):
     if (len(valoresActuales) > 1):
         valoresActuales[0] = salida
         recEvaluarAnd(valoresActuales)
-    
+         
     return salida
 
 def recEvaluarOr(valores):
@@ -121,11 +129,22 @@ examples = [
     [['~p', '~q', '~r'], ['q', '~r', 'p'], ['~p', 'q', '~r']],
     [['r'], ['~q', '~r'], ['~p', 'q', '~r'], ['q']]
 ]
-operacionBooleana = obtenerFormulaBooleana('{{p},{~p}}')
-print(operacionBooleana)
-        
-        
+examplesFormaClausula = [
+    '{{p},{~p}}',
+    '{{q,p,~p}}',
+    '{{~p,~r,~s}},{~q,~p,~s}}',
+    '{{~p,~q},{q,~s},{~p,s},{~q,s}}',
+    '{{~p,~q,~r},{q,~r,p},{~p,q,~r}}',
+    '{{r,~q,~r},{~p,q,~r},{q}}'
+]
+######################################################################
+print('____________________________________________')
+print('EJEMPLOS DENTRO DEL PROGRAMA')
+print('____________________________________________')
+for i in range(len(examples)):
+    print(i+1, examples[i])
+elegido = int(input('\nElija el numero de la operacion a evaluar: '))
+
+print('____________________________________________')
+operacionBooleana = obtenerFormulaBooleana(examplesFormaClausula[elegido-1])
 calcularAsignacion(operacionBooleana)
-
-
-
