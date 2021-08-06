@@ -24,7 +24,7 @@ def cleanLiteral(B, literal):
     B1.append(i[:])
   for element in B1:
     if literal in element:
-      elements.append(element)  # Se agregan los que se quieren volar
+      elements.append(element)  # Se agregan los que se quieren volar !q
   for element in elements:
       B1.remove(element)
   # Ahora se eliminan las literales
@@ -46,7 +46,7 @@ def DPLL(B, I):
 
     B1 = cleanLiteral(B, literal)  # 2
     Iaux = I.copy()
-    Iaux[literal] = 1                # Hacer true L
+    Iaux[literal] = 1              # Hacer true L
     result, I1 = DPLL(B1, Iaux)
     if result:
         return True, I1.copy()
